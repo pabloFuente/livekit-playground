@@ -1,0 +1,83 @@
+<html>
+<head>
+  <script src="/tokens.js"></script>
+  <script src="/livekit-client.umd.js"></script>
+  <script src="/client.js" defer></script>
+</head>
+<body>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: sans-serif; margin: 0; background: #1a1a2e; color: #eee; }
+  h3 { margin: 0 0 8px; }
+  .top { display: flex; gap: 16px; padding: 16px; }
+  .panel { flex: 1; padding: 16px; background: #16213e; border-radius: 8px; }
+  video { width: 100%; background: #000; border-radius: 6px; display: block; }
+  button { margin: 4px; padding: 8px 16px; font-size: 14px; cursor: pointer; border: none; border-radius: 4px; background: #0f3460; color: #eee; }
+  button:hover { background: #1a5276; }
+  button:disabled { opacity: 0.5; cursor: default; }
+  button.active { background: #1db954; color: #000; }
+  pre { font-family: monospace; font-size: 12px; white-space: pre-wrap; background: #0d0d0d; color: #0f0; padding: 12px; margin: 16px; border-radius: 6px; max-height: 400px; overflow-y: auto; }
+  select, input[type=number] { background: #0d0d0d; color: #eee; border: 1px solid #333; padding: 4px 8px; border-radius: 4px; font-size: 13px; }
+  label { font-size: 13px; margin-right: 8px; }
+  .config-section { margin: 12px 0; padding: 12px; background: #0f1a30; border-radius: 6px; }
+  .config-section h4 { margin: 0 0 8px; color: #aaa; font-size: 13px; text-transform: uppercase; }
+  .scenario-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .layer-row { display: flex; align-items: center; gap: 8px; margin: 4px 0; padding: 6px; background: #16213e; border-radius: 4px; font-size: 13px; }
+  .layer-row input { width: 70px; }
+  .layer-row button { font-size: 11px; padding: 2px 8px; background: #8b0000; }
+  #custom-layers { max-height: 200px; overflow-y: auto; }
+</style>
+
+<div class="top">
+  <!-- Publisher -->
+  <div class="panel" style="flex:1.2">
+    <h3>Publisher</h3>
+    <video id="local-video" autoplay muted playsinline></video>
+
+    <div class="config-section">
+      <h4>Scenario Presets</h4>
+      <div class="scenario-grid">
+        <button id="btn-screenshare" onclick="selectScenario('screenshare')">Screen Share (default simulcast)</button>
+        <button id="btn-2layers" onclick="selectScenario('2layers')">Camera &mdash; 2 layers (default)</button>
+        <button id="btn-3layers" onclick="selectScenario('3layers')">Camera &mdash; 3 layers (default)</button>
+        <button id="btn-custom" onclick="selectScenario('custom')">Camera &mdash; Custom layers</button>
+      </div>
+    </div>
+
+    <div class="config-section" id="custom-config" style="display:none">
+      <h4>Custom Layer Configuration</h4>
+      <div style="margin-bottom:8px">
+        <label>Primary encoding:</label>
+        <label>W <input type="number" id="primary-w" value="1920" style="width:60px"></label>
+        <label>H <input type="number" id="primary-h" value="1080" style="width:60px"></label>
+        <label>Bitrate (kbps) <input type="number" id="primary-bps" value="3000" style="width:70px"></label>
+        <label>FPS <input type="number" id="primary-fps" value="30" style="width:50px"></label>
+      </div>
+      <div style="margin-bottom:6px; display:flex; align-items:center; gap:8px;">
+        <span>Simulcast layers (lowest &rarr; highest, excluding primary):</span>
+        <button onclick="addCustomLayer()" style="background:#1db954;color:#000;font-size:12px;padding:4px 10px">+ Add layer</button>
+      </div>
+      <div id="custom-layers"></div>
+    </div>
+
+    <div style="margin-top:8px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+      <span id="scenario-label" style="color:#aaa; font-size:13px;">No scenario selected</span>
+      <button id="publish-btn" onclick="publish()" disabled>Publish</button>
+      <button onclick="publisherStats()">Publisher Stats</button>
+    </div>
+  </div>
+
+  <!-- Subscriber -->
+  <div class="panel" style="flex:1">
+    <h3>Subscriber</h3>
+    <video id="remote-video" autoplay playsinline style="width:100%;max-height:600px"></video>
+    <div style="margin-top:8px">
+      <button id="subscribe-btn" onclick="subscribe()">Subscribe</button>
+      <button onclick="subscriberStats()">Subscriber Stats</button>
+    </div>
+  </div>
+</div>
+
+<pre id="stats-output">Stats will appear here...</pre>
+</body>
+</html>
